@@ -5,14 +5,20 @@
 #include <fstream>
 #include <map>
 #include <iterator>
+#include <exception>
 
-// TODO: написать функции обхода графа
+#include <queue>
+#include <stack>
+
+// TODO: реализовать функции обхода графа
 
 
 using std::string;
 using std::vector;
 using std::map;
 using std::iterator;
+
+using std::queue;
 
 vector<vector<int>> readMatrix(string filename); // чтение матрицы
 map<int, vector<int>> readList(string filename); // чтение списка
@@ -47,7 +53,8 @@ int main(int argC, char** argV)
 	// чтение +
 	// вывод +
 	// рассчёт матрицы +
-	// обход -
+	// обход +
+	// вывод обхода на экран -
 
 
 	return 0;
@@ -138,22 +145,118 @@ vector<vector<int>> makeRelMatrix(vector<vector<int>> Array)
 	return Buf;
 }
 
-bool listWidth(int, map<int, vector<int>>) // обход списка в ширину
+bool listDFS(int n, map<int, vector<int>> list, vector<bool> &used); // для рекурсии со списком
+bool matrixDFS(int n, vector<vector<int>> matrix, vector<bool> &used);
+
+bool listWidth(int n, map<int, vector<int>> list) // обход списка в ширину
 {
+	if (n < 0 || n > list.size())
+		throw std::exception("bad argument");
+	queue<int> q;
+	vector<bool> used(list.size());
+	q.push(n);
+	while(!q.empty())
+	{
+		int v = q.front();
+
+		std::cout << v << " ";
+
+		used[v] = true;
+		q.pop();
+		for (int i = 0; i < list[v].size(); i++)
+		{
+			if(!used[list[v][i]])
+				q.push(list[v][i]);
+		}
+	}
+
+	std::cout << std::endl;
+
 	return false;
 }
 
-bool listDepth(int, map<int, vector<int>>) // обход списка в глубину
+bool listDepth(int n, map<int, vector<int>> list) // обход списка в глубину
 {
+	if (n < 0 || n > list.size())
+		throw std::exception("bad argument");
+
+	vector<bool> used(list.size());
+
+	listDFS(n, list, used);
+
+	std::cout << std::endl;
+
 	return false;
 }
 
-bool matrixWidth(int, vector<vector<int>>) // обход матрицы в ширину
+bool matrixWidth(int n, vector<vector<int>> matrix) // обход матрицы в ширину
 {
+	if (n < 0 || n > matrix[0].size())
+		throw std::exception("bad argument");
+	queue<int> q;
+	vector<bool> used(matrix[0].size());
+	q.push(n);
+	while (!q.empty())
+	{
+		int v = q.front();
+
+		std::cout << v << " ";
+
+		used[v] = true;
+		q.pop();
+		for (int i = 0; i < matrix[v].size(); i++)
+		{
+			if (matrix[v][i] && !used[matrix[v][i]])
+				q.push(matrix[v][i]);
+		}
+	}
+
+	std::cout << std::endl;
+
 	return false;
 }
 
-bool matrixDepth(int, vector<vector<int>>) // обход матрицы в глубину 
+bool matrixDepth(int n, vector<vector<int>> matrix) // обход матрицы в глубину 
 {
+	if (n < 0 || n > matrix[0].size())
+		throw std::exception("bad argument");
+	vector<bool> used(matrix[0].size());
+
+	matrixDFS(n, matrix, used);
+
+	std::cout << std::endl;
+
+	return false;
+}
+
+
+bool listDFS(int n, map<int, vector<int>> list, vector<bool> &used)
+{
+	std::cout << n << " ";
+
+	used[n] = true;
+
+	vector<int> searched = list[n];
+
+	for (int i = 0; i < searched.size(); i++)
+	{
+		if (!used[searched[i]])
+			listDFS(searched[i], list, used);
+	}
+}
+
+bool matrixDFS(int n, vector<vector<int>> matrix, vector<bool>& used)
+{
+	std::cout << n << " ";
+
+	used[n] = true;
+	vector<int> searched = matrix[n];
+
+	for (int i = 0; i < searched.size(); i++)
+	{
+		if (!used[searched[i]])
+			matrixDFS(searched[i], matrix, used);
+	}
+
 	return false;
 }
