@@ -48,14 +48,38 @@ int main(int argC, char** argV)
 	{
 	case 1: // Matrix
 	{
+		int n = 0;
 		vector<vector<int>> matrix = readMatrix("matrix.txt");
 		showMatrix(matrix);
+		cout << "Enter num between 1 and " << matrix.size() << " : ";
+		cin >> n;
+		if (n < 1 || n > matrix.size())
+		{
+			cout << "Wring parameter. Switched to 1." << endl;
+			n = 1;
+		}
+		cout << "BFS" << endl;
+		matrixWidth(n, matrix);
+		cout << "DFS" << endl;
+		matrixDepth(n, matrix);
 	}
 		break;
 	case 2: // List
 	{
+		int n = 0;
 		map<int, vector<int>> list = readList("list.txt");
 		showList(list);
+		cout << "Enter num between 1 and " << list.size() << " : ";
+		cin >> n;
+		if (n < 1 || n > list.size())
+		{
+			cout << "Wring parameter. Switched to 1." << endl;
+			n = 1;
+		}
+		cout << "BFS" << endl;
+		listWidth(n, list);
+		cout << "DFS" << endl;
+		listDepth(n, list);
 	}
 		break;
 	default:
@@ -206,8 +230,9 @@ bool matrixDFS(int n, vector<vector<int>> matrix, vector<bool> &used);
 
 bool listWidth(int n, map<int, vector<int>> list) // обход списка в ширину
 {
-	if (n < 0 || n > list.size())
+	if (n < 1 || n > list.size())
 		throw std::exception("bad argument");
+	n--;
 	queue<int> q;
 	vector<bool> used(list.size());
 	q.push(n);
@@ -215,14 +240,17 @@ bool listWidth(int n, map<int, vector<int>> list) // обход списка в ширину
 	{
 		int v = q.front();
 
-		std::cout << v << " ";
+		std::cout << v + 1 << " ";
 
 		used[v] = true;
 		q.pop();
 		for (int i = 0; i < list[v].size(); i++)
 		{
 			if (!used[list[v][i]])
+			{
 				q.push(list[v][i]);
+				used[list[v][i]] = true;
+			}
 		}
 	}
 
@@ -233,8 +261,9 @@ bool listWidth(int n, map<int, vector<int>> list) // обход списка в ширину
 
 bool listDepth(int n, map<int, vector<int>> list) // обход списка в глубину
 {
-	if (n < 0 || n > list.size())
+	if (n < 1 || n > list.size())
 		throw std::exception("bad argument");
+	n--;
 
 	vector<bool> used(list.size());
 
@@ -247,8 +276,9 @@ bool listDepth(int n, map<int, vector<int>> list) // обход списка в глубину
 
 bool matrixWidth(int n, vector<vector<int>> matrix) // обход матрицы в ширину
 {
-	if (n < 0 || n > matrix[0].size())
+	if (n < 1 || n > matrix[0].size())
 		throw std::exception("bad argument");
+	n--;
 	queue<int> q;
 	vector<bool> used(matrix[0].size());
 	q.push(n);
@@ -256,14 +286,17 @@ bool matrixWidth(int n, vector<vector<int>> matrix) // обход матрицы в ширину
 	{
 		int v = q.front();
 
-		std::cout << v << " ";
+		std::cout << v + 1 << " ";
 
 		used[v] = true;
 		q.pop();
 		for (int i = 0; i < matrix[v].size(); i++)
 		{
-			if (matrix[v][i] && !used[matrix[v][i]])
-				q.push(matrix[v][i]);
+			if (!used[i] && matrix[v][i])
+			{
+				q.push(i);
+				used[i] = true;
+			}
 		}
 	}
 
@@ -274,8 +307,9 @@ bool matrixWidth(int n, vector<vector<int>> matrix) // обход матрицы в ширину
 
 bool matrixDepth(int n, vector<vector<int>> matrix) // обход матрицы в глубину 
 {
-	if (n < 0 || n > matrix[0].size())
+	if (n < 1 || n > matrix[0].size())
 		throw std::exception("bad argument");
+	n--;
 	vector<bool> used(matrix[0].size());
 
 	matrixDFS(n, matrix, used);
@@ -287,7 +321,7 @@ bool matrixDepth(int n, vector<vector<int>> matrix) // обход матрицы в глубину
 
 bool listDFS(int n, map<int, vector<int>> list, vector<bool> &used)
 {
-	std::cout << n << " ";
+	std::cout << n + 1 << " ";
 
 	used[n] = true;
 
@@ -304,15 +338,16 @@ bool listDFS(int n, map<int, vector<int>> list, vector<bool> &used)
 
 bool matrixDFS(int n, vector<vector<int>> matrix, vector<bool>& used)
 {
-	std::cout << n << " ";
+	std::cout << n + 1 << " ";
 
 	used[n] = true;
 	vector<int> searched = matrix[n];
-
 	for (int i = 0; i < searched.size(); i++)
 	{
-		if (!used[searched[i]])
-			matrixDFS(searched[i], matrix, used);
+		if (!used[i])
+		{
+			matrixDFS(i, matrix, used);
+		}
 	}
 
 	return false;
