@@ -13,6 +13,9 @@
 // TODO: реализовать функции обхода графа +
 // TODO: протестировать функции на предмет корректности
 
+using std::cin;
+using std::cout;
+using std::endl;
 
 using std::string;
 using std::vector;
@@ -21,8 +24,8 @@ using std::iterator;
 
 using std::queue;
 
-vector<vector<int>> readMatrix(string filename); // чтение матрицы
-map<int, vector<int>> readList(string filename); // чтение списка
+vector<vector<int>> readMatrix(string filename, bool isOriented = false); // чтение матрицы
+map<int, vector<int>> readList(string filename, bool isOriented = false); // чтение списка (формат [1..n])
 
 void showList(map<int, vector<int>>); // отображение списка
 void showMatrix(vector<vector<int>>); // отображение матрицы
@@ -38,15 +41,28 @@ bool matrixDepth(int, vector<vector<int>>); // обход матрицы в глубину
 
 int main(int argC, char** argV)
 {
-	vector<vector<int>> matrix = readMatrix("matrix.txt");
-	map<int, vector<int>> list = readList("list.txt");
+	int mode;
+	cout << "Choose mode:" << endl << "1.Matrix" << endl << "2.List" << endl;
+	cin >> mode;
+	switch (mode)
+	{
+	case 1: // Matrix
+	{
+		vector<vector<int>> matrix = readMatrix("matrix.txt");
+		showMatrix(matrix);
+	}
+		break;
+	case 2: // List
+	{
+		map<int, vector<int>> list = readList("list.txt");
+		showList(list);
+	}
+		break;
+	default:
+		return -1;
+	}
 
-	showMatrix(matrix);
-	showList(list);
-
-	makeRelMatrix(matrix);
-	makeRelMatrix(list);
-
+	system("pause");
 
 
 	// TODO: заполнить main
@@ -63,28 +79,33 @@ int main(int argC, char** argV)
 	return 0;
 }
 
-vector<vector<int>> readMatrix(string filename)
+vector<vector<int>> readMatrix(string filename, bool isOriented)
 {
 	std::ifstream file;
 	file.open(filename);
 	vector<int> buf;
+	int _buf;
 	while (!file.eof())
 	{
-		buf.push_back(file.get());
+		file >> _buf;
+		buf.push_back(_buf);
 	}
-	vector<vector<int>> result(sqrt(buf.size()));
-	for (int i = 0; i < sqrt(buf.size()); i++)
+	int n = (int)sqrt(buf.size());
+	vector<vector<int>> result(n);
+	for (int i = 0; i < n; i++)
+		result[i] = vector<int>(n);
+	for (int i = 0; i < n; i++)
 	{
-		for (int j = 0; j < sqrt(buf.size()); j++)
+		for (int j = 0; j < n; j++)
 		{
-			result[i][j] = buf[i*sqrt(buf.size()) + j];
+			result[i][j] = !isOriented ? abs(buf[i*n + j]) : buf[i*n + j];
 		}
 	}
 	file.close();
 	return result;
 }
 
-map<int, vector<int>> readList(string filename)
+map<int, vector<int>> readList(string filename, bool isOriented)
 {
 	std::ifstream file;
 	file.open(filename);
@@ -92,12 +113,42 @@ map<int, vector<int>> readList(string filename)
 	map<int, vector<int>> result;
 	while (!file.eof())
 	{
-		_buf1 = file.get();
-		_buf2 = file.get();
+		file >> _buf1;
+		_buf1--;
+		file >> _buf2;
+		_buf2--;
 
 		result[_buf1].push_back(_buf2);
+		if (!isOriented)
+			result[_buf2].push_back(_buf1);
 	}
 	return result;
+}
+
+void showList(map<int, vector<int>> list)
+{
+	
+	for (map<int, vector<int>>::iterator i = list.begin(); i != list.end(); i++)
+	{
+		cout << (*i).first + 1 << " : ";
+		for (int j = 0; j < (*i).second.size(); j++)
+		{
+			cout << (*i).second[j] + 1 << " ";
+		}
+		cout << endl;
+	}
+}
+
+void showMatrix(vector<vector<int>> matrix)
+{
+	for (int i = 0; i < matrix.size(); i++)
+	{
+		for (int j = 0; j < matrix[i].size(); j++)
+		{
+			cout << matrix[i][j] << " ";
+		}
+		cout << endl;
+	}
 }
 
 vector<vector<int>> makeRelMatrix(map<int, vector<int>> Map)
@@ -126,6 +177,8 @@ vector<vector<int>> makeRelMatrix(map<int, vector<int>> Map)
 				relMatrix[(*it).first][(*it).second[i]] = -1;
 		}
 	}
+
+	return relMatrix;
 }
 
 vector<vector<int>> makeRelMatrix(vector<vector<int>> Array)
@@ -158,7 +211,7 @@ bool listWidth(int n, map<int, vector<int>> list) // обход списка в ширину
 	queue<int> q;
 	vector<bool> used(list.size());
 	q.push(n);
-	while(!q.empty())
+	while (!q.empty())
 	{
 		int v = q.front();
 
@@ -168,7 +221,7 @@ bool listWidth(int n, map<int, vector<int>> list) // обход списка в ширину
 		q.pop();
 		for (int i = 0; i < list[v].size(); i++)
 		{
-			if(!used[list[v][i]])
+			if (!used[list[v][i]])
 				q.push(list[v][i]);
 		}
 	}
@@ -232,7 +285,6 @@ bool matrixDepth(int n, vector<vector<int>> matrix) // обход матрицы в глубину
 	return false;
 }
 
-
 bool listDFS(int n, map<int, vector<int>> list, vector<bool> &used)
 {
 	std::cout << n << " ";
@@ -246,6 +298,8 @@ bool listDFS(int n, map<int, vector<int>> list, vector<bool> &used)
 		if (!used[searched[i]])
 			listDFS(searched[i], list, used);
 	}
+
+	return false;
 }
 
 bool matrixDFS(int n, vector<vector<int>> matrix, vector<bool>& used)
