@@ -225,6 +225,9 @@ vector<vector<int>> makeRelMatrix(vector<vector<int>> Array)
 	return Buf;
 }
 
+
+
+
 bool listDFS(int n, map<int, vector<int>> list, vector<bool> &used); // для рекурсии со списком
 bool matrixDFS(int n, vector<vector<int>> matrix, vector<bool> &used);
 
@@ -344,7 +347,7 @@ bool matrixDFS(int n, vector<vector<int>> matrix, vector<bool>& used)
 	vector<int> searched = matrix[n];
 	for (int i = 0; i < searched.size(); i++)
 	{
-		if (!used[i])
+		if (!used[i] && searched[i])
 		{
 			matrixDFS(i, matrix, used);
 		}
