@@ -13,6 +13,12 @@
 // TODO: реализовать функции обхода графа +
 // TODO: протестировать функции на предмет корректности
 
+
+#define BFS
+
+#define DFS
+
+
 using std::cin;
 using std::cout;
 using std::endl;
@@ -41,7 +47,7 @@ bool matrixDepth(int, vector<vector<int>>); // обход матрицы в глубину
 
 int main(int argC, char** argV)
 {
-	int mode;
+	int mode = 0;
 	cout << "Choose mode:" << endl << "1.Matrix" << endl << "2.List" << endl;
 	cin >> mode;
 	switch (mode)
@@ -55,13 +61,18 @@ int main(int argC, char** argV)
 		cin >> n;
 		if (n < 1 || n > matrix.size())
 		{
-			cout << "Wring parameter. Switched to 1." << endl;
+			cout << "Wrong parameter. Switched to 1." << endl;
 			n = 1;
 		}
+#ifdef BFS
 		cout << "BFS" << endl;
 		matrixWidth(n, matrix);
+#endif
+#ifdef DFS
 		cout << "DFS" << endl;
 		matrixDepth(n, matrix);
+#endif
+		showMatrix(makeRelMatrix(matrix)); // вывод матрицы инциндентности
 	}
 		break;
 	case 2: // List
@@ -73,13 +84,18 @@ int main(int argC, char** argV)
 		cin >> n;
 		if (n < 1 || n > list.size())
 		{
-			cout << "Wring parameter. Switched to 1." << endl;
+			cout << "Wrong parameter. Switched to 1." << endl;
 			n = 1;
 		}
+#ifdef BFS
 		cout << "BFS" << endl;
 		listWidth(n, list);
+#endif
+#ifdef DFS
 		cout << "DFS" << endl;
 		listDepth(n, list);
+#endif
+		showMatrix(makeRelMatrix(list)); // вывод матрицы инциндентности
 	}
 		break;
 	default:
@@ -118,11 +134,12 @@ vector<vector<int>> readMatrix(string filename, bool isOriented)
 	vector<vector<int>> result(n);
 	for (int i = 0; i < n; i++)
 		result[i] = vector<int>(n);
+	int c = 0;
 	for (int i = 0; i < n; i++)
 	{
 		for (int j = 0; j < n; j++)
 		{
-			result[i][j] = !isOriented ? abs(buf[i*n + j]) : buf[i*n + j];
+			result[i][j] = !isOriented ? abs(buf[c++]) : buf[c++];
 		}
 	}
 	file.close();
@@ -151,7 +168,7 @@ map<int, vector<int>> readList(string filename, bool isOriented)
 
 void showList(map<int, vector<int>> list)
 {
-	
+	cout << endl;
 	for (map<int, vector<int>>::iterator i = list.begin(); i != list.end(); i++)
 	{
 		cout << (*i).first + 1 << " : ";
@@ -161,10 +178,12 @@ void showList(map<int, vector<int>> list)
 		}
 		cout << endl;
 	}
+	cout << endl;
 }
 
 void showMatrix(vector<vector<int>> matrix)
 {
+	cout << endl;
 	for (int i = 0; i < matrix.size(); i++)
 	{
 		for (int j = 0; j < matrix[i].size(); j++)
@@ -173,6 +192,7 @@ void showMatrix(vector<vector<int>> matrix)
 		}
 		cout << endl;
 	}
+	cout << endl;
 }
 
 vector<vector<int>> makeRelMatrix(map<int, vector<int>> Map)
@@ -184,10 +204,10 @@ vector<vector<int>> makeRelMatrix(map<int, vector<int>> Map)
 		if ((*it).first > max)
 			max = (*it).first;
 	}
-	vector<vector<int>> relMatrix(max);
-	for (int i = 0; i < max; i++)
+	vector<vector<int>> relMatrix(max + 1);
+	for (int i = 0; i < max + 1; i++)
 	{
-		relMatrix[i] = vector<int>(max);
+		relMatrix[i] = vector<int>(max + 1);
 	}
 
 	// TODO: сделать заполнение таблицы
@@ -195,10 +215,11 @@ vector<vector<int>> makeRelMatrix(map<int, vector<int>> Map)
 	{
 		for (int i = 0; i < (*it).second.size(); i++)
 		{
-			if ((*it).second[i] > 0)
-				relMatrix[(*it).first][(*it).second[i]] = 1;
-			else if ((*it).second[i] > 0)
-				relMatrix[(*it).first][(*it).second[i]] = -1;
+			relMatrix[(*it).first][(*it).second[i]] = 1;
+			if (relMatrix[(*it).second[i]][(*it).first] != -1 && relMatrix[(*it).second[i]][(*it).first] != 1)
+				relMatrix[(*it).second[i]][(*it).first] = -1;
+			else
+				relMatrix[(*it).second[i]][(*it).first] = 1;
 		}
 	}
 
@@ -215,11 +236,18 @@ vector<vector<int>> makeRelMatrix(vector<vector<int>> Array)
 			if (Buf[i][j] > 0)
 			{
 				Buf[i][j] = 1;
+				if (Buf[i][j] <= 0)
+				{
+					if (Buf[j][i] != -1)
+						Buf[j][i] = -1;
+					else
+						Buf[j][i] = 1;
+				}
 			}
-			else if (Buf[i][j] < 0)
+			/*else if (Buf[i][j] < 0)
 			{
 				Buf[i][j] = -1;
-			}
+			}*/
 		}
 	}
 	return Buf;
