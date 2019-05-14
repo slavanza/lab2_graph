@@ -13,8 +13,9 @@
 // TODO: реализовать функции обхода графа +
 // TODO: протестировать функции на предмет корректности
 
+#define ORIENTED false
 
-#define BFS
+//#define BFS
 
 #define DFS
 
@@ -29,6 +30,7 @@ using std::map;
 using std::iterator;
 
 using std::queue;
+using std::stack;
 
 vector<vector<int>> readMatrix(string filename, bool isOriented = false); // чтение матрицы
 map<int, vector<int>> readList(string filename, bool isOriented = false); // чтение списка (формат [1..n])
@@ -39,11 +41,17 @@ void showMatrix(vector<vector<int>>); // отображение матрицы
 vector<vector<int>> makeRelMatrix(map<int, vector<int>>); // построение матрицы инциндентности
 vector<vector<int>> makeRelMatrix(vector<vector<int>>); // -//-
 
+void showRelMatrix(vector<vector<int>> rel);
+
 bool listWidth(int, map<int, vector<int>>); // обход списка в ширину
 bool matrixWidth(int, vector<vector<int>>); // обход матрицы в ширину
 
 bool listDepth(int, map<int, vector<int>>); // обход списка в глубину
 bool matrixDepth(int, vector<vector<int>>); // обход матрицы в глубину
+
+bool _matrix = false, _list = false;
+vector<vector<int>> matrix;
+map<int, vector<int>> list;
 
 int main(int argC, char** argV)
 {
@@ -54,9 +62,11 @@ int main(int argC, char** argV)
 	{
 	case 1: // Matrix
 	{
+		_matrix = true;
 		int n = 0;
-		vector<vector<int>> matrix = readMatrix("matrix.txt");
+		matrix = readMatrix("matrix.txt", ORIENTED);
 		showMatrix(matrix);
+//#ifndef ORIENTED
 		cout << "Enter num between 1 and " << matrix.size() << " : ";
 		cin >> n;
 		if (n < 1 || n > matrix.size())
@@ -72,14 +82,17 @@ int main(int argC, char** argV)
 		cout << "DFS" << endl;
 		matrixDepth(n, matrix);
 #endif
-		showMatrix(makeRelMatrix(matrix)); // вывод матрицы инциндентности
+//#endif
+		showRelMatrix(makeRelMatrix(matrix)); // вывод матрицы инциндентности
 	}
 		break;
 	case 2: // List
 	{
+		_list = true;
 		int n = 0;
-		map<int, vector<int>> list = readList("list.txt");
+		list = readList("list.txt", ORIENTED);
 		showList(list);
+//#ifndef ORIENTED
 		cout << "Enter num between 1 and " << list.size() << " : ";
 		cin >> n;
 		if (n < 1 || n > list.size())
@@ -95,7 +108,8 @@ int main(int argC, char** argV)
 		cout << "DFS" << endl;
 		listDepth(n, list);
 #endif
-		showMatrix(makeRelMatrix(list)); // вывод матрицы инциндентности
+//#endif
+		showRelMatrix(makeRelMatrix(list)); // вывод матрицы инциндентности
 	}
 		break;
 	default:
@@ -236,14 +250,12 @@ vector<vector<int>> makeRelMatrix(vector<vector<int>> Array)
 			if (Buf[i][j] > 0)
 			{
 				Buf[i][j] = 1;
-				if (Buf[i][j] <= 0)
+				if (j > i && Buf[j][i] <= 0)
 				{
-					if (Buf[j][i] != -1)
-						Buf[j][i] = -1;
-					else
-						Buf[j][i] = 1;
+					Buf[j][i] = -1;
 				}
 			}
+			
 			/*else if (Buf[i][j] < 0)
 			{
 				Buf[i][j] = -1;
@@ -251,6 +263,71 @@ vector<vector<int>> makeRelMatrix(vector<vector<int>> Array)
 		}
 	}
 	return Buf;
+}
+
+void showRelMatrix(vector<vector<int>> rel)
+{
+	struct pair
+	{
+		int v1, v2;
+		char ch;
+	} p;
+	vector<pair> m;
+	char c = 'a';
+	if (_matrix)
+	{
+		for (int i = 0; i < matrix.size(); i++)
+		{
+			for (int j = 0; j < matrix[i].size(); j++)
+			{
+				if (i != j && matrix[i][j])
+				{
+					if(ORIENTED == false)
+						if (j > i)
+						{
+							p.v1 = i;
+							p.v2 = j;
+							p.ch = c++;
+							m.push_back(p);
+						}
+						else
+						{
+							p.v1 = i;
+							p.v2 = j;
+							p.ch = c++;
+							m.push_back(p);
+						}
+				}
+			}
+		}
+	}
+	if (_list)
+	{
+		map<int, vector<int>>::iterator i;
+		for (i = list.begin(); i != list.end(); i++)
+		{
+			for (int j = 0; j < (*i).second.size(); j++)
+			{
+				p.v1 = (*i).first;
+				p.v2 = (*i).second[j];
+				p.ch = c++;
+				m.push_back(p);
+			}
+		}
+	}
+	cout << endl << "    a b c d e f" << endl;
+	for (int i = 0; i < rel.size(); i++)
+	{
+		cout << i + 1 << " : ";
+		for (int j = 0; j < m.size(); j++)
+		{
+			if (m[j].v1 == i)
+				cout << "1 ";
+			else
+				cout << "0 ";
+		}
+		cout << endl;
+	}
 }
 
 
@@ -343,7 +420,26 @@ bool matrixDepth(int n, vector<vector<int>> matrix) // обход матрицы в глубину
 	n--;
 	vector<bool> used(matrix[0].size());
 
-	matrixDFS(n, matrix, used);
+	stack<int> st;
+	st.push(n);
+
+	while (!st.empty())
+	{
+		int cur = st.top();
+		cout << cur + 1 << " ";
+		st.pop();
+		while (used[cur] == true)
+		{
+			cur = st.top();
+			st.pop();
+		}
+		used[cur] = true;
+		for (int i = 0; i < matrix.size(); i++)
+			if (matrix[cur][i] > 0 && cur != i)
+				st.push(i);
+	}
+
+	//matrixDFS(n, matrix, used);
 
 	std::cout << std::endl;
 
