@@ -11,7 +11,7 @@
 #include <stack>
 
 // TODO: реализовать функции обхода графа +
-// TODO: протестировать функции на предмет корректности
+// TODO: протестировать функции на предмет корректности +
 
 
 //#define BFS
@@ -40,7 +40,7 @@ void showMatrix(vector<vector<int>>); // отображение матрицы
 vector<vector<int>> makeRelMatrix(map<int, vector<int>>); // построение матрицы инциндентности
 vector<vector<int>> makeRelMatrix(vector<vector<int>>); // -//-
 
-void showRelMatrix(vector<vector<int>> rel);
+void showRelMatrix(vector<vector<int>> rel, bool ORIENTED);
 
 bool listWidth(int, map<int, vector<int>>); // обход списка в ширину
 bool matrixWidth(int, vector<vector<int>>); // обход матрицы в ширину
@@ -52,12 +52,22 @@ bool _matrix = false, _list = false;
 vector<vector<int>> matrix;
 map<int, vector<int>> list;
 
-#define ORIENTED false
+//#define ORIENTED false
 
 int main(int argC, char** argV)
 {
+	bool ORIENTED = false;
+	int m;
+	cout << "Choose mode:" << endl << "1. Oriented" << endl << "2. Not oriented" << endl;
+
+	cin >> m;
+	if (m == 1)
+		ORIENTED = true;
+	else if (m == 2)
+		ORIENTED = false;
+
 	int mode = 0;
-	cout << "Choose mode:" << endl << "1.Matrix" << endl << "2.List" << endl;
+	cout << "Choose mode:" << endl << "1. Matrix" << endl << "2. List" << endl;
 	cin >> mode;
 	switch (mode)
 	{
@@ -86,7 +96,7 @@ int main(int argC, char** argV)
 			matrixDepth(n, matrix);
 #endif
 		}
-		showRelMatrix(makeRelMatrix(matrix)); // вывод матрицы инциндентности
+		showRelMatrix(makeRelMatrix(matrix), ORIENTED); // вывод матрицы инциндентности
 	}
 		break;
 	case 2: // List
@@ -113,8 +123,8 @@ int main(int argC, char** argV)
 			listDepth(n, list);
 #endif
 		}
-//#endif
-		showRelMatrix(makeRelMatrix(list)); // вывод матрицы инциндентности
+
+		showRelMatrix(makeRelMatrix(list), ORIENTED); // вывод матрицы инциндентности
 	}
 		break;
 	default:
@@ -270,7 +280,7 @@ vector<vector<int>> makeRelMatrix(vector<vector<int>> Array)
 	return Buf;
 }
 
-void showRelMatrix(vector<vector<int>> rel)
+void showRelMatrix(vector<vector<int>> rel, bool ORIENTED)
 {
 	struct pair
 	{
