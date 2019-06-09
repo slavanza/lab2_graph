@@ -345,7 +345,11 @@ void showRelMatrix(vector<vector<int>> rel, bool ORIENTED)
 			}
 		}
 	}
-	cout << endl << "    a b c d e f" << endl;
+	cout << endl << "     ";
+	char ch = 'a';
+	for (int i = 0; i < m.size(); i++)// a b c d e f" << endl;
+		cout << ch++ << "  ";
+	cout << endl;
 	for (int i = 0; i < rel.size(); i++)
 	{
 		cout << i + 1 << " : ";
@@ -354,9 +358,12 @@ void showRelMatrix(vector<vector<int>> rel, bool ORIENTED)
 			if (ORIENTED)
 			{
 				if (m[j].v1 == i)
-					cout << "1 ";
+					cout << " 1 ";
 				else
-					cout << "0 ";
+					if (m[j].v2 == i)
+						cout << "-1 ";
+				else
+					cout << " 0 ";
 			}
 			else
 			{
